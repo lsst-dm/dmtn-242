@@ -132,10 +132,18 @@ Conclusions
 It would seem that to satisfy the main use cases we would need more than a single Butler client/server interface.
 
 * A Butler client/server is the only efficient way to support put and get operations (rather than trying to use a generic Butler with server registry and datastore) but we need to be able to create a local butler or client/server butler from ``Butler(config)`` to avoid confusion and code changes when switching from a local to remote Butler.
-* People will still need registry query methods so we still need a way to implement pagination and a query object in the client.
+* People will still need registry query methods so we still need a way to implement pagination and a query object in the client even if most calls are queries and not updates.
+* For dataset association and certification, how are transactions handled?
+  Do we ignore transactions in the client and assume that all refs will be sent to the server with no ability to rollback if a later registry call fails?
+  Do we try to rollback as we do in datastore by keeping a record of the calls made to the server and try to apply the reverse and, say, decertify on raise?
 * A client/server Butler being able to use a ``Datastore`` that may or may not be a client/server ``Datastore`` (and could therefore support a ``ChainedDatastore``) seems like it could be useful given the requirement for the client to reuse large parts of ``FileDatastore`` to do the reading and writing of files.
 * Graph building (and possibly BPS submissions) will need their own client/server code.
   The difficulty is determining whether it is possible to make ``pipetask qgraph`` work out automatically that it is attached to a server or if any entirely new ``pipetask-client`` is needed.
+* The new interface must support authorization tokens, even if they are not checked initially.
+  Some design work is needed to determine what the server does with collection constraints -- are all collection requests checked before execution or are results filtered before being returned to the client?
+* Is the server code included in ``daf_butler`` itself or is it a new package?
+  Given the client code is tightly coupled to the server implementation it seems reasonable for testing if the client and server code is in the same package and butler users would likely prefer to install a single package for all butler implementations.
+* ``httpx`` will have to be added to the base ``rubin-env``.
 
 .. _FastAPI: https://fastapi.tiangolo.com
 
