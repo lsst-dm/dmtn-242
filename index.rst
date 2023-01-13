@@ -45,6 +45,16 @@ As a prototype it was a great success but did raise some questions:
 4. Queries are already thought to be a little slow but it seems unreasonable for ``pipetask qgraph`` to try to build a quantum graph with many queries and dataset lookups involving a server.
    This suggests that there should be a client/server interface for graph building, possibly with the option of writing the graph to a temporary bucket and then returning a signed URL to its location.
 
+Query Pagination
+----------------
+
+Currently the butler query system supports ``ORDER BY`` and ``LIMIT`` when querying datasets or dimension records.
+For pagination either the server has to remember state or the client has to resend the query with sufficient information to retrieve subsequent pages.
+Remembering state in the server might be more efficient in terms of database resource usage but comes with difficulties associated with timing out of queries and making the state available if multiple Butler servers can handle requests.
+
+A simpler alternative is to add ``OFFSET`` to the query objects and use that in the client to request successive pages, generating a new query in the server each time.
+This would require that the client always specifies an ``ORDER BY`` if one is not provided by the user and also handles the user-specified ``LIMIT`` by converting that into pages.
+
 Butler Only?
 ============
 
