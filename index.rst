@@ -54,9 +54,14 @@ Remembering state in the server might be more efficient in terms of database res
 
 A simpler alternative is to add ``OFFSET`` to the query objects and use that in the client to request successive pages, generating a new query in the server each time.
 This would require that the client always specifies an ``ORDER BY`` if one is not provided by the user and also handles the user-specified ``LIMIT`` by converting that into pages.
+Using ``OFFSET`` can be problematic if deletions occur during the page queries since that can result in some results being skipped.
+This is not a problem for dimension records (that are essentially append only in most use cases) but is something that can occur for dataset queries.
 
 Russ Allbery recommends that we also consider keyset pagination where, effectively, an additional piece of information is returned to the client which can then be sent back to the server when the next page is needed and that information turned into a ``WHERE X > Y`` modifier to the query.
 An interesting discussion of different pagination options can be found at https://www.citusdata.com/blog/2016/03/30/five-ways-to-paginate/
+
+A further suggestion is for the server to write all the paged results to temporary files and return to the client the locations.
+The client can then read each page and return the results.
 
 Butler Only?
 ============
