@@ -55,6 +55,9 @@ Remembering state in the server might be more efficient in terms of database res
 A simpler alternative is to add ``OFFSET`` to the query objects and use that in the client to request successive pages, generating a new query in the server each time.
 This would require that the client always specifies an ``ORDER BY`` if one is not provided by the user and also handles the user-specified ``LIMIT`` by converting that into pages.
 
+Russ Allbery recommends that we also consider keyset pagination where, effectively, an additional piece of information is returned to the client which can then be sent back to the server when the next page is needed and that information turned into a ``WHERE X > Y`` modifier to the query.
+An interesting discussion of different pagination options can be found at https://www.citusdata.com/blog/2016/03/30/five-ways-to-paginate/
+
 Butler Only?
 ============
 
@@ -148,7 +151,7 @@ It would seem that to satisfy the main use cases we would need more than a singl
   Do we try to rollback as we do in datastore by keeping a record of the calls made to the server and try to apply the reverse and, say, decertify on raise?
 * A client/server Butler being able to use a ``Datastore`` that may or may not be a client/server ``Datastore`` (and could therefore support a ``ChainedDatastore``) seems like it could be useful given the requirement for the client to reuse large parts of ``FileDatastore`` to do the reading and writing of files.
 * Graph building (and possibly BPS submissions) will need their own client/server code.
-  The difficulty is determining whether it is possible to make ``pipetask qgraph`` work out automatically that it is attached to a server or if any entirely new ``pipetask-client`` is needed.
+  The difficulty is determining whether it is possible to make ``pipetask qgraph`` work out automatically that it is attached to a server or if an entirely new ``pipetask-client`` is needed.
 * The new interface must support authorization tokens, even if they are not checked initially.
   Some design work is needed to determine what the server does with collection constraints -- are all collection requests checked before execution or are results filtered before being returned to the client?
 * Is the server code included in ``daf_butler`` itself or is it a new package?
