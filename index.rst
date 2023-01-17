@@ -139,6 +139,16 @@ There is not even support for transfers involving a chained datastore.
 More thought would be needed to allow two different datastore classes to transfer file records but it might help if ``ServerFileDatastore`` is a subclass of ``FileDatastore`` and all records access is handled through server methods.
 This effectively moves some of the private python methods into public server methods, but removes the need to try to support a full opaque storage manager client/server plugin for datastore.
 
+Packaging
+=========
+
+The prototype was implemented with all the client code distributed as part of ``daf_butler`` via a ``RemoteRegistry`` class that was selectable by changing the Butler configuration file.
+The server was distributed as a standalone package (https://github.com/lsst-dm/butler-server) which made it difficult to include in tests.
+The SQuaRE team recommend that eventually the client code be distributed on its own and for testing purposes have it depend on the server code, and then have both of those depend on ``daf_butler``.
+This will make it simpler for the client/server interface to change at a different cadence to core ``daf_butler`` and potentially simplify server version migrations.
+
+For the initial development, where client/server interfaces will likely be changing continually, along with potentially internal changes to ``daf_butler`` as features are needed, we recommend that we add both the client and server code to the ``daf_butler`` distribution and mark them as experimental.
+
 Conclusions
 ===========
 
@@ -154,8 +164,6 @@ It would seem that to satisfy the main use cases we would need more than a singl
   The difficulty is determining whether it is possible to make ``pipetask qgraph`` work out automatically that it is attached to a server or if an entirely new ``pipetask-client`` is needed.
 * The new interface must support authorization tokens, even if they are not checked initially.
   Some design work is needed to determine what the server does with collection constraints -- are all collection requests checked before execution or are results filtered before being returned to the client?
-* Is the server code included in ``daf_butler`` itself or is it a new package?
-  Given the client code is tightly coupled to the server implementation it seems reasonable for testing if the client and server code is in the same package and butler users would likely prefer to install a single package for all butler implementations.
 * ``httpx`` will have to be added to the base ``rubin-env``.
 
 .. _FastAPI: https://fastapi.tiangolo.com
