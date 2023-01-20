@@ -15,6 +15,8 @@ Abstract
 
 In DMTN-176 we examined the requirements for a Butler client/server and proposed a path towards a prototype. In this document we expand on the implementation plan based on that experience.
 
+This is a living document that we hope to evolve as we finalize design decisions and implementations.
+
 Introduction
 ============
 
@@ -60,8 +62,9 @@ This is not a problem for dimension records (that are essentially append only in
 Russ Allbery recommends that we also consider keyset pagination where, effectively, an additional piece of information is returned to the client which can then be sent back to the server when the next page is needed and that information turned into a ``WHERE X > Y`` modifier to the query.
 An interesting discussion of different pagination options can be found at https://www.citusdata.com/blog/2016/03/30/five-ways-to-paginate/
 
-A further suggestion is for the server to write all the paged results to temporary files and return to the client the locations.
+A further suggestion is for the server to write all the paged results to temporary files (in either JSON or parquet format) and return to the client the locations.
 The client can then read each page and return the results.
+File deletion can be handled by informing the object store of an expiration date.
 
 Butler Only?
 ============
@@ -153,6 +156,16 @@ The SQuaRE team recommend that eventually the client code be distributed on its 
 This will make it simpler for the client/server interface to change at a different cadence to core ``daf_butler`` and potentially simplify server version migrations.
 
 For the initial development, where client/server interfaces will likely be changing continually, along with potentially internal changes to ``daf_butler`` as features are needed, we recommend that we add both the client and server code to the ``daf_butler`` distribution and mark them as experimental.
+
+Async
+=====
+
+FastAPI will use threading if an API is not async/await aware.
+This can involve some overhead and is not the recommended way to run a FastAPI server.
+None of the Butler code is async compatible and in the past there wasn't great support for async in Sqlalchemy.
+Now that Sqlalchemy supports async and there are the `asyncpg` and `aiosqlite` libraries for database connectivity, we should at least consider a timeline for migrating all of butler to support async.
+This will be a large amount of work but can be started from the bottom up and improved over time.
+Performance of the server will become critically important as we approach Data Release 1 with 10,000 users who will all be required to access Butler resources through the server.
 
 Conclusions
 ===========
